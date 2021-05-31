@@ -90,18 +90,16 @@ def display_instances(image, mask, fname="test", figsize=(5, 5), blur=False, con
                 p = Polygon(verts, facecolor="none", edgecolor=color)
                 ax.add_patch(p)
     ax.imshow(masked_image.astype(np.uint8), aspect='auto')
-    fig.savefig(fname)
     io_buf = io.BytesIO()
     fig.savefig(io_buf, format='raw')
     io_buf.seek(0)
     img_arr = np.reshape(np.frombuffer(io_buf.getvalue(), dtype=np.uint8),
                         newshape=(int(fig.bbox.bounds[3]), int(fig.bbox.bounds[2]), -1))
     io_buf.close()
-    print(f"{fname} saved.")
     return img_arr
 
 
-def run_vis(img):
+def run_vis(img_all):
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     # build model
     model = vits.vit_small(patch_size = 8, num_classes=0)
@@ -109,66 +107,61 @@ def run_vis(img):
         p.requires_grad = False
     model.eval()
     model.to(device)
-    url = "dino_deitsmall8_300ep_pretrain/dino_deitsmall8_300ep_pretrain.pth" 
+    url = "dino_deitsmall8_300ep_pretrain/dino_deitsmall8_300ep_pretrain.pth"
+    final_img_list = [] 
 
     state_dict = torch.hub.load_state_dict_from_url(url="https://dl.fbaipublicfiles.com/dino/" + url)
     model.load_state_dict(state_dict, strict=True)
 
+    for img in img_all:
+        img = img.permute(1, 2, 0).numpy()
+        img = Image.fromarray(np.uint8(img)).convert('RGB')
+        transform = pth_transforms.Compose([
+            pth_transforms.ToTensor(),
+            pth_transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
+        ])
+        img = transform(img)
 
-    img = Image.fromarray(np.uint8(img)).convert('RGB')
-    transform = pth_transforms.Compose([
-        pth_transforms.ToTensor(),
-        pth_transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
-    ])
-    img = transform(img)
+        # make the image divisible by the patch size
+        w, h = img.shape[1] - img.shape[1] % 8, img.shape[2] - img.shape[2] % 8
+        img = img[:, :w, :h].unsqueeze(0)
 
-    # make the image divisible by the patch size
-    w, h = img.shape[1] - img.shape[1] % 8, img.shape[2] - img.shape[2] % 8
-    img = img[:, :w, :h].unsqueeze(0)
+        w_featmap = img.shape[-2] // 8
+        h_featmap = img.shape[-1] // 8
 
-    w_featmap = img.shape[-2] // 8
-    h_featmap = img.shape[-1] // 8
+        attentions = model.get_last_selfattention(img.to(device))
 
-    attentions = model.get_last_selfattention(img.to(device))
+        nh = attentions.shape[1] # number of head
 
-    nh = attentions.shape[1] # number of head
+        # we keep only the output patch attention
+        attentions = attentions[0, :, 0, 1:].reshape(nh, -1)
 
-    # we keep only the output patch attention
-    attentions = attentions[0, :, 0, 1:].reshape(nh, -1)
+        # we keep only a certain percentage of the mass
+        val, idx = torch.sort(attentions)
+        val /= torch.sum(val, dim=1, keepdim=True)
+        cumval = torch.cumsum(val, dim=1)
+        th_attn = cumval > (1 - 0.6)
+        idx2 = torch.argsort(idx)
+        for head in range(nh):
+            th_attn[head] = th_attn[head][idx2[head]]
+        th_attn = th_attn.reshape(nh, w_featmap, h_featmap).float()
+        # interpolate
+        th_attn = nn.functional.interpolate(th_attn.unsqueeze(0), scale_factor=8, mode="nearest")[0].cpu().numpy()
 
-    # we keep only a certain percentage of the mass
-    val, idx = torch.sort(attentions)
-    val /= torch.sum(val, dim=1, keepdim=True)
-    cumval = torch.cumsum(val, dim=1)
-    th_attn = cumval > (1 - 0.6)
-    idx2 = torch.argsort(idx)
-    for head in range(nh):
-        th_attn[head] = th_attn[head][idx2[head]]
-    th_attn = th_attn.reshape(nh, w_featmap, h_featmap).float()
-    # interpolate
-    th_attn = nn.functional.interpolate(th_attn.unsqueeze(0), scale_factor=8, mode="nearest")[0].cpu().numpy()
+        attentions = attentions.reshape(nh, w_featmap, h_featmap)
+        attentions = nn.functional.interpolate(attentions.unsqueeze(0), scale_factor=8, mode="nearest")[0].cpu().numpy()
 
-    attentions = attentions.reshape(nh, w_featmap, h_featmap)
-    attentions = nn.functional.interpolate(attentions.unsqueeze(0), scale_factor=8, mode="nearest")[0].cpu().numpy()
+        # save attentions heatmaps
+        os.makedirs(".", exist_ok=True)
+        torchvision.utils.save_image(torchvision.utils.make_grid(img, normalize=True, scale_each=True), os.path.join(".", "img.png"))
 
-    # save attentions heatmaps
-    os.makedirs(".", exist_ok=True)
-    torchvision.utils.save_image(torchvision.utils.make_grid(img, normalize=True, scale_each=True), os.path.join(".", "img.png"))
-    # for j in range(nh):
-    #     fname = os.path.join(args.output_dir, "attn-head" + str(j) + ".png")
-    #     plt.imsave(fname=fname, arr=attentions[j], format='png')
-    #     print(f"{fname} saved.")
-
-    image = skimage.io.imread(os.path.join(".", "img.png"))
-    for j in range(nh):
-        print(th_attn[j])
-        print(len(th_attn[j]))
-        print(len(th_attn[j]))
-        print(th_attn[j][50])
-        img_arr = display_instances(image, th_attn[j], fname=os.path.join(".", "mask_th" + str(0.6) + "_head" + str(j) +".png"), blur=False)
+        image = skimage.io.imread(os.path.join(".", "img.png"))
+        req_head = len(nh) - 1
+        img_final = display_instances(image, th_attn[req_head], fname=os.path.join(".", "mask_th" + str(0.6) + "_head" + str(req_head) +".png"), blur=False)
+        final_img_list.append(img_final)
         break
 
-    return th_attn
+    return final_img_list
 
 
 # if __name__ == '__main__':
