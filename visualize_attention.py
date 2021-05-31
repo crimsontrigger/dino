@@ -165,6 +165,8 @@ def run_vis(img):
         img_arr = display_instances(image, th_attn[j], fname=os.path.join(".", "mask_th" + str(0.6) + "_head" + str(j) +".png"), blur=False)
         break
 
+    return th_attn
+
 
 # if __name__ == '__main__':
 #     parser = argparse.ArgumentParser('Visualize Self-Attention maps')
