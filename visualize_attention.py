@@ -91,8 +91,14 @@ def display_instances(image, mask, fname="test", figsize=(5, 5), blur=False, con
                 ax.add_patch(p)
     ax.imshow(masked_image.astype(np.uint8), aspect='auto')
     fig.savefig(fname)
+    io_buf = io.BytesIO()
+    fig.savefig(io_buf, format='raw', dpi=DPI)
+    io_buf.seek(0)
+    img_arr = np.reshape(np.frombuffer(io_buf.getvalue(), dtype=np.uint8),
+                        newshape=(int(fig.bbox.bounds[3]), int(fig.bbox.bounds[2]), -1))
+    io_buf.close()
     print(f"{fname} saved.")
-    return
+    return img_arr
 
 
 if __name__ == '__main__':
@@ -196,14 +202,17 @@ if __name__ == '__main__':
     attentions = attentions.reshape(nh, w_featmap, h_featmap)
     attentions = nn.functional.interpolate(attentions.unsqueeze(0), scale_factor=args.patch_size, mode="nearest")[0].cpu().numpy()
 
-    # save attentions heatmaps
-    os.makedirs(args.output_dir, exist_ok=True)
-    torchvision.utils.save_image(torchvision.utils.make_grid(img, normalize=True, scale_each=True), os.path.join(args.output_dir, "img.png"))
-    for j in range(nh):
-        fname = os.path.join(args.output_dir, "attn-head" + str(j) + ".png")
-        plt.imsave(fname=fname, arr=attentions[j], format='png')
-        print(f"{fname} saved.")
+    # # save attentions heatmaps
+    # os.makedirs(args.output_dir, exist_ok=True)
+    # torchvision.utils.save_image(torchvision.utils.make_grid(img, normalize=True, scale_each=True), os.path.join(args.output_dir, "img.png"))
+    # for j in range(nh):
+    #     fname = os.path.join(args.output_dir, "attn-head" + str(j) + ".png")
+    #     plt.imsave(fname=fname, arr=attentions[j], format='png')
+    #     print(f"{fname} saved.")
 
     image = skimage.io.imread(os.path.join(args.output_dir, "img.png"))
     for j in range(nh):
-        display_instances(image, th_attn[j], fname=os.path.join(args.output_dir, "mask_th" + str(args.threshold) + "_head" + str(j) +".png"), blur=False)
+        img_arr = display_instances(image, th_attn[j], fname=os.path.join(args.output_dir, "mask_th" + str(args.threshold) + "_head" + str(j) +".png"), blur=False)
+        type(img_arr)
+        plt.imshow(img_arr)
+        break
