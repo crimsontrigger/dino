@@ -32,7 +32,6 @@ import numpy as np
 from PIL import Image
 import io
 
-import utils
 import vision_transformer as vits
 
 
