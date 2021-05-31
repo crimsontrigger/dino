@@ -113,8 +113,11 @@ def run_vis(img_all):
     state_dict = torch.hub.load_state_dict_from_url(url="https://dl.fbaipublicfiles.com/dino/" + url)
     model.load_state_dict(state_dict, strict=True)
 
-    for img in img_all:
-        img = img.permute(1, 2, 0).numpy()
+    for img_torch in img_all:
+        print(len(img_torch))
+        print(type(img_torch))
+        img = img_torch.permute(1, 2, 0).numpy()
+        print(type(img))
         img = Image.fromarray(np.uint8(img)).convert('RGB')
         transform = pth_transforms.Compose([
             pth_transforms.ToTensor(),
