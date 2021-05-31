@@ -113,7 +113,7 @@ def run_vis(img):
     }
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     # build model
-    model = vits.__dict__[args.arch](patch_size=args.patch_size, num_classes=0)
+    model = vits.vit_small(patch_size=args.patch_size, num_classes=0)
     for p in model.parameters():
         p.requires_grad = False
     model.eval()
