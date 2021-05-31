@@ -31,6 +31,7 @@ from torchvision import transforms as pth_transforms
 import numpy as np
 from PIL import Image
 import io
+from tqdm import tqdm
 
 import vision_transformer as vits
 
@@ -113,11 +114,8 @@ def run_vis(img_all):
     state_dict = torch.hub.load_state_dict_from_url(url="https://dl.fbaipublicfiles.com/dino/" + url)
     model.load_state_dict(state_dict, strict=True)
 
-    for img_torch in img_all:
-        print(len(img_torch))
-        print(type(img_torch))
+    for img_torch in tqdm(img_all):
         img = img_torch.permute(1, 2, 0).numpy()
-        print(type(img))
         img = Image.fromarray(np.uint8(img)).convert('RGB')
         transform = pth_transforms.Compose([
             pth_transforms.ToTensor(),
