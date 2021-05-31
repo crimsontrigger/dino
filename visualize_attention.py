@@ -159,7 +159,7 @@ def run_vis(img_all):
         torchvision.utils.save_image(torchvision.utils.make_grid(img, normalize=True, scale_each=True), os.path.join(".", "img.png"))
 
         image = skimage.io.imread(os.path.join(".", "img.png"))
-        req_head = len(nh) - 1
+        req_head = nh - 1
         img_final = display_instances(image, th_attn[req_head], fname=os.path.join(".", "mask_th" + str(0.6) + "_head" + str(req_head) +".png"), blur=False)
         final_img_list.append(img_final)
         break
