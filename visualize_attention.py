@@ -172,6 +172,7 @@ if __name__ == '__main__':
         pth_transforms.ToTensor(),
         pth_transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
     ])
+    print(type(img))
     img = transform(img)
 
     # make the image divisible by the patch size
@@ -214,6 +215,6 @@ if __name__ == '__main__':
     image = skimage.io.imread(os.path.join(args.output_dir, "img.png"))
     for j in range(nh):
         img_arr = display_instances(image, th_attn[j], fname=os.path.join(args.output_dir, "mask_th" + str(args.threshold) + "_head" + str(j) +".png"), blur=False)
-        type(img_arr)
-        plt.imshow(img_arr)
+        print(type(img_arr))
+        print(plt.imshow(img_arr))
         break
