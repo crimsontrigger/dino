@@ -109,21 +109,12 @@ def run_vis(img,arch = "vit_small",patch_size=8,threshold=0.6):
         p.requires_grad = False
     model.eval()
     model.to(device)
-    url = None
-    if arch == "vit_small" and patch_size == 16:
-        url = "dino_deitsmall16_pretrain/dino_deitsmall16_pretrain.pth"
-    elif arch == "vit_small" and patch_size == 8:
-        url = "dino_deitsmall8_300ep_pretrain/dino_deitsmall8_300ep_pretrain.pth"  # model used for visualizations in our paper
-    elif arch == "vit_base" and patch_size == 16:
-        url = "dino_vitbase16_pretrain/dino_vitbase16_pretrain.pth"
-    elif arch == "vit_base" and patch_size == 8:
-        url = "dino_vitbase8_pretrain/dino_vitbase8_pretrain.pth"
-    if url is not None:
-        print("Since no pretrained weights have been provided, we load the reference pretrained DINO weights.")
-        state_dict = torch.hub.load_state_dict_from_url(url="https://dl.fbaipublicfiles.com/dino/" + url)
-        model.load_state_dict(state_dict, strict=True)
-    else:
-        print("There is no reference weights available for this model => We use random weights.")
+    url = "dino_deitsmall8_300ep_pretrain/dino_deitsmall8_300ep_pretrain.pth" 
+
+    print("Since no pretrained weights have been provided, we load the reference pretrained DINO weights.")
+    state_dict = torch.hub.load_state_dict_from_url(url="https://dl.fbaipublicfiles.com/dino/" + url)
+    model.load_state_dict(state_dict, strict=True)
+
 
     img = Image.fromarray(np.uint8(img)).convert('RGB')
     transform = pth_transforms.Compose([
