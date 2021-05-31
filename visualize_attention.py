@@ -102,10 +102,6 @@ def display_instances(image, mask, fname="test", figsize=(5, 5), blur=False, con
 
 
 def run_vis(img,arch = "vit_small",patch_size=8,threshold=0.6):
-    args = {
-        "arch" : 'vit_small',
-        "patch_size":8,
-    }
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     # build model
     model = vits.vit_small(patch_size=patch_size, num_classes=0)
