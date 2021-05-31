@@ -162,6 +162,9 @@ def run_vis(img):
     image = skimage.io.imread(os.path.join(".", "img.png"))
     for j in range(nh):
         print(th_attn[j])
+        print(len(th_attn[j]))
+        print(len(th_attn[j]))
+        print(th_attn[j][50])
         img_arr = display_instances(image, th_attn[j], fname=os.path.join(".", "mask_th" + str(0.6) + "_head" + str(j) +".png"), blur=False)
         break
 
