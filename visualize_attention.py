@@ -104,14 +104,13 @@ def display_instances(image, mask, fname="test", figsize=(5, 5), blur=False, con
 def run_vis(img):
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     # build model
-    model = vits.vit_small(8, num_classes=0)
+    model = vits.vit_small(patch_size = 8, num_classes=0)
     for p in model.parameters():
         p.requires_grad = False
     model.eval()
     model.to(device)
     url = "dino_deitsmall8_300ep_pretrain/dino_deitsmall8_300ep_pretrain.pth" 
 
-    print("Since no pretrained weights have been provided, we load the reference pretrained DINO weights.")
     state_dict = torch.hub.load_state_dict_from_url(url="https://dl.fbaipublicfiles.com/dino/" + url)
     model.load_state_dict(state_dict, strict=True)
 
@@ -121,7 +120,6 @@ def run_vis(img):
         pth_transforms.ToTensor(),
         pth_transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
     ])
-    print(type(img))
     img = transform(img)
 
     # make the image divisible by the patch size
@@ -163,9 +161,8 @@ def run_vis(img):
 
     image = skimage.io.imread(os.path.join(".", "img.png"))
     for j in range(nh):
-        img_arr = display_instances(image, th_attn[j], fname=os.path.join(".", "mask_th" + str(0.6) + "_head" + str(j) +".png"), blur=False)
-        print(type(img_arr))
         print(th_attn[j])
+        img_arr = display_instances(image, th_attn[j], fname=os.path.join(".", "mask_th" + str(0.6) + "_head" + str(j) +".png"), blur=False)
         break
 
 
