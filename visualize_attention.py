@@ -202,9 +202,9 @@ if __name__ == '__main__':
     attentions = attentions.reshape(nh, w_featmap, h_featmap)
     attentions = nn.functional.interpolate(attentions.unsqueeze(0), scale_factor=args.patch_size, mode="nearest")[0].cpu().numpy()
 
-    # # save attentions heatmaps
-    # os.makedirs(args.output_dir, exist_ok=True)
-    # torchvision.utils.save_image(torchvision.utils.make_grid(img, normalize=True, scale_each=True), os.path.join(args.output_dir, "img.png"))
+    # save attentions heatmaps
+    os.makedirs(args.output_dir, exist_ok=True)
+    torchvision.utils.save_image(torchvision.utils.make_grid(img, normalize=True, scale_each=True), os.path.join(args.output_dir, "img.png"))
     # for j in range(nh):
     #     fname = os.path.join(args.output_dir, "attn-head" + str(j) + ".png")
     #     plt.imsave(fname=fname, arr=attentions[j], format='png')
