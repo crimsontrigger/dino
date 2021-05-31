@@ -93,7 +93,7 @@ def display_instances(image, mask, fname="test", figsize=(5, 5), blur=False, con
     ax.imshow(masked_image.astype(np.uint8), aspect='auto')
     fig.savefig(fname)
     io_buf = io.BytesIO()
-    fig.savefig(io_buf, format='raw', dpi=DPI)
+    fig.savefig(io_buf, format='raw')
     io_buf.seek(0)
     img_arr = np.reshape(np.frombuffer(io_buf.getvalue(), dtype=np.uint8),
                         newshape=(int(fig.bbox.bounds[3]), int(fig.bbox.bounds[2]), -1))
