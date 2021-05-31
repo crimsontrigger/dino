@@ -101,10 +101,10 @@ def display_instances(image, mask, fname="test", figsize=(5, 5), blur=False, con
     return img_arr
 
 
-def run_vis(img,arch,patch_size,threshold):
+def run_vis(img):
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     # build model
-    model = vits.vit_small(patch_size, num_classes=0)
+    model = vits.vit_small(8, num_classes=0)
     for p in model.parameters():
         p.requires_grad = False
     model.eval()
@@ -125,11 +125,11 @@ def run_vis(img,arch,patch_size,threshold):
     img = transform(img)
 
     # make the image divisible by the patch size
-    w, h = img.shape[1] - img.shape[1] % patch_size, img.shape[2] - img.shape[2] % patch_size
+    w, h = img.shape[1] - img.shape[1] % 8, img.shape[2] - img.shape[2] % 8
     img = img[:, :w, :h].unsqueeze(0)
 
-    w_featmap = img.shape[-2] // patch_size
-    h_featmap = img.shape[-1] // patch_size
+    w_featmap = img.shape[-2] // 8
+    h_featmap = img.shape[-1] // 8
 
     attentions = model.get_last_selfattention(img.to(device))
 
@@ -142,16 +142,16 @@ def run_vis(img,arch,patch_size,threshold):
     val, idx = torch.sort(attentions)
     val /= torch.sum(val, dim=1, keepdim=True)
     cumval = torch.cumsum(val, dim=1)
-    th_attn = cumval > (1 - threshold)
+    th_attn = cumval > (1 - 0.6)
     idx2 = torch.argsort(idx)
     for head in range(nh):
         th_attn[head] = th_attn[head][idx2[head]]
     th_attn = th_attn.reshape(nh, w_featmap, h_featmap).float()
     # interpolate
-    th_attn = nn.functional.interpolate(th_attn.unsqueeze(0), scale_factor=patch_size, mode="nearest")[0].cpu().numpy()
+    th_attn = nn.functional.interpolate(th_attn.unsqueeze(0), scale_factor=8, mode="nearest")[0].cpu().numpy()
 
     attentions = attentions.reshape(nh, w_featmap, h_featmap)
-    attentions = nn.functional.interpolate(attentions.unsqueeze(0), scale_factor=patch_size, mode="nearest")[0].cpu().numpy()
+    attentions = nn.functional.interpolate(attentions.unsqueeze(0), scale_factor=8, mode="nearest")[0].cpu().numpy()
 
     # save attentions heatmaps
     os.makedirs(".", exist_ok=True)
@@ -163,7 +163,7 @@ def run_vis(img,arch,patch_size,threshold):
 
     image = skimage.io.imread(os.path.join(".", "img.png"))
     for j in range(nh):
-        img_arr = display_instances(image, th_attn[j], fname=os.path.join(".", "mask_th" + str(threshold) + "_head" + str(j) +".png"), blur=False)
+        img_arr = display_instances(image, th_attn[j], fname=os.path.join(".", "mask_th" + str(0.6) + "_head" + str(j) +".png"), blur=False)
         print(type(img_arr))
         print(th_attn[j])
         break
