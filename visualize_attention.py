@@ -38,7 +38,11 @@ import vision_transformer as vits
 
 def apply_mask(image, mask, color, alpha=0.5):
     for c in range(3):
-        image[:, :, c] = image[:, :, c] * (1 - alpha * mask) + alpha * mask * color[c] * 255
+        if mask == 0:
+            new_mask = 1
+        else:
+            new_mask = 0
+        image[:, :, c] = image[:, :, c] * (1 - alpha * new_mask) + alpha * new_mask * color[c] * 255
     return image
 
 
@@ -53,7 +57,7 @@ def random_colors(N, bright=False):
     return colors
 
 
-def display_instances(image, mask, fname="test", figsize=(5, 5), blur=False, contour=True, alpha=0.5):
+def display_instances(image, mask, fname="test", figsize=(5, 5), blur=False, contour=True, alpha=0.0):
     fig = plt.figure(figsize=figsize, frameon=False)
     ax = plt.Axes(fig, [0., 0., 1., 1.])
     ax.set_axis_off()
