@@ -91,7 +91,7 @@ def display_instances(image, mask, fname="test", figsize=(5, 5), blur=False, con
                 verts = np.fliplr(verts) - 1
                 p = Polygon(verts, facecolor="none", edgecolor=(0,0,0))
                 ax.add_patch(p)
-    # ax.imshow(masked_image.astype(np.uint8), aspect='auto')
+    ax.imshow(masked_image.astype(np.uint8), aspect='auto')
     io_buf = io.BytesIO()
     fig.savefig(io_buf, format='raw')
     io_buf.seek(0)
