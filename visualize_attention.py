@@ -38,11 +38,8 @@ import vision_transformer as vits
 
 def apply_mask(image, mask, color, alpha=0.5):
     for c in range(3):
-        if mask == 0:
-            new_mask = 1
-        else:
-            new_mask = 0
-        image[:, :, c] = image[:, :, c] * (1 - alpha * new_mask) + alpha * new_mask * color[c] * 255
+        print(mask)
+        image[:, :, c] = image[:, :, c] * (1 - alpha * mask) + alpha * mask * color[c] * 255
     return image
 
 
@@ -102,7 +99,7 @@ def display_instances(image, mask, fname="test", figsize=(5, 5), blur=False, con
     img_arr = np.reshape(np.frombuffer(io_buf.getvalue(), dtype=np.uint8),
                         newshape=(int(fig.bbox.bounds[3]), int(fig.bbox.bounds[2]), -1))
     io_buf.close()
-    # fig.clf()
+    fig.clf()
     return img_arr
 
 
