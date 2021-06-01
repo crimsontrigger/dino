@@ -54,7 +54,7 @@ def random_colors(N, bright=False):
     return colors
 
 
-def display_instances(image, mask, fname="test", figsize=(5, 5), blur=False, contour=True, alpha=0.0):
+def display_instances(image, mask, fname="test", figsize=(5, 5), blur=False, contour=True, alpha=1.0):
     fig = plt.figure(figsize=figsize, frameon=False)
     ax = plt.Axes(fig, [0., 0., 1., 1.])
     ax.set_axis_off()
@@ -144,7 +144,7 @@ def run_vis(img_all):
         val, idx = torch.sort(attentions)
         val /= torch.sum(val, dim=1, keepdim=True)
         cumval = torch.cumsum(val, dim=1)
-        th_attn = cumval > (1 - 0.6)
+        th_attn = cumval < (1 - 0.6)
         idx2 = torch.argsort(idx)
         for head in range(nh):
             th_attn[head] = th_attn[head][idx2[head]]
