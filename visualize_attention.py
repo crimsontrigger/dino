@@ -64,6 +64,7 @@ def display_instances(image, mask, fname="test", figsize=(5, 5), blur=False, con
     mask = mask[None, :, :]
     # Generate random colors
     colors = random_colors(N)
+    print(colors)
 
     # Show area outside image boundaries.
     height, width = image.shape[:2]
