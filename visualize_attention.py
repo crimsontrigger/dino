@@ -46,7 +46,7 @@ def random_colors(N, bright=False):
     """
     Generate random colors.
     """
-    brightness = 1.0 if bright else 0.0
+    brightness = 1.0 if bright else 0.7
     hsv = [(i / N, 1, brightness) for i in range(N)]
     colors = list(map(lambda c: colorsys.hsv_to_rgb(*c), hsv))
     random.shuffle(colors)
@@ -79,7 +79,7 @@ def display_instances(image, mask, fname="test", figsize=(5, 5), blur=False, con
         if blur:
             _mask = cv2.blur(_mask,(10,10))
         # Mask
-        masked_image = apply_mask(masked_image, _mask, color, alpha)
+        masked_image = apply_mask(masked_image, _mask, (0,0,0), alpha)
         # Mask Polygon
         # Pad to ensure proper polygons for masks that touch image edges.
         if contour:
@@ -89,7 +89,7 @@ def display_instances(image, mask, fname="test", figsize=(5, 5), blur=False, con
             for verts in contours:
                 # Subtract the padding and flip (y, x) to (x, y)
                 verts = np.fliplr(verts) - 1
-                p = Polygon(verts, facecolor="none", edgecolor=color)
+                p = Polygon(verts, facecolor="none", edgecolor=(0,0,0))
                 ax.add_patch(p)
     # ax.imshow(masked_image.astype(np.uint8), aspect='auto')
     io_buf = io.BytesIO()
@@ -98,7 +98,7 @@ def display_instances(image, mask, fname="test", figsize=(5, 5), blur=False, con
     img_arr = np.reshape(np.frombuffer(io_buf.getvalue(), dtype=np.uint8),
                         newshape=(int(fig.bbox.bounds[3]), int(fig.bbox.bounds[2]), -1))
     io_buf.close()
-    fig.clf()
+    # fig.clf()
     return img_arr
 
 
