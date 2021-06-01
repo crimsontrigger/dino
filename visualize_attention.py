@@ -42,11 +42,11 @@ def apply_mask(image, mask, color, alpha=0.5):
     return image
 
 
-def random_colors(N, bright=True):
+def random_colors(N, bright=False):
     """
     Generate random colors.
     """
-    brightness = 1.0 if bright else 0.7
+    brightness = 1.0 if bright else 0.0
     hsv = [(i / N, 1, brightness) for i in range(N)]
     colors = list(map(lambda c: colorsys.hsv_to_rgb(*c), hsv))
     random.shuffle(colors)
@@ -97,6 +97,7 @@ def display_instances(image, mask, fname="test", figsize=(5, 5), blur=False, con
     img_arr = np.reshape(np.frombuffer(io_buf.getvalue(), dtype=np.uint8),
                         newshape=(int(fig.bbox.bounds[3]), int(fig.bbox.bounds[2]), -1))
     io_buf.close()
+    fig.clf()
     return img_arr
 
 
@@ -160,6 +161,7 @@ def run_vis(img_all):
         req_head = nh - 1
         img_final = display_instances(image, th_attn[req_head], fname=os.path.join(".", "mask_th" + str(0.6) + "_head" + str(req_head) +".png"), blur=False)
         final_img_list.append(img_final)
+        break
 
     return final_img_list
 
