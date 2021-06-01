@@ -161,7 +161,6 @@ def run_vis(img_all):
         req_head = nh - 1
         img_final = display_instances(image, th_attn[req_head], fname=os.path.join(".", "mask_th" + str(0.6) + "_head" + str(req_head) +".png"), blur=False)
         final_img_list.append(img_final)
-        break
 
     return final_img_list
 
