@@ -38,7 +38,6 @@ import vision_transformer as vits
 
 def apply_mask(image, mask, color, alpha=0.5):
     for c in range(3):
-        print(mask)
         image[:, :, c] = image[:, :, c] * (1 - alpha * mask) + alpha * mask * color[c] * 255
     return image
 
@@ -65,7 +64,6 @@ def display_instances(image, mask, fname="test", figsize=(5, 5), blur=False, con
     mask = mask[None, :, :]
     # Generate random colors
     colors = random_colors(N)
-    print(colors)
 
     # Show area outside image boundaries.
     height, width = image.shape[:2]
