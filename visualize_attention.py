@@ -78,7 +78,7 @@ def display_instances(image, mask, fname="test", figsize=(5, 5), blur=False, con
         if blur:
             _mask = cv2.blur(_mask,(10,10))
         # Mask
-        masked_image = apply_mask(masked_image, _mask, (0,0,0), alpha)
+        masked_image = apply_mask(masked_image, _mask, color, alpha)
         # Mask Polygon
         # Pad to ensure proper polygons for masks that touch image edges.
         if contour:
@@ -88,7 +88,7 @@ def display_instances(image, mask, fname="test", figsize=(5, 5), blur=False, con
             for verts in contours:
                 # Subtract the padding and flip (y, x) to (x, y)
                 verts = np.fliplr(verts) - 1
-                p = Polygon(verts, facecolor="none", edgecolor=(0,0,0))
+                p = Polygon(verts, facecolor="none", edgecolor=color)
                 ax.add_patch(p)
     ax.imshow(masked_image.astype(np.uint8), aspect='auto')
     io_buf = io.BytesIO()
